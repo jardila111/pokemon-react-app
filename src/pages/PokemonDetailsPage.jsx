@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getPokemonDetails } from '../api/pokeapi'
+import AbilityBadge from '../components/AbilityBadge'
+import LoadingSpinner from '../components/LoadingSpinner'
+import ErrorMessage from '../components/ErrorMessage'
+import { defaultTypeColor, typeColors } from '../constants/typeColors'
 
 // "/pokemon/:name" — full details + abilities
 function PokemonDetailsPage() {
@@ -25,44 +29,64 @@ function PokemonDetailsPage() {
     loadDetails()
   }, [name]) // re-fetch when the URL's :name changes
 
+  if (loading) return <LoadingSpinner text={`Loading ${name}...`} />
+  if (errorMessage) return <ErrorMessage message={errorMessage} />
+  if (!pokemon) return null
+
+  // Bigger official artwork when available, small sprite as a fallback
+  const image =
+    pokemon.sprites.other?.['official-artwork']?.front_default ||
+    pokemon.sprites.front_default
+
   return (
-    <main className='p-8'>
-      <Link to='/' className='text-blue-600 underline'>
+    <main className='mx-auto max-w-3xl p-4'>
+      <Link
+        to='/'
+        className='inline-block rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700'
+      >
         ← Back
       </Link>
 
-      {loading && <p className='mt-4'>Loading...</p>}
-      {errorMessage && <p className='mt-4 text-red-600'>{errorMessage}</p>}
+      <section className='mt-6 flex flex-col items-center gap-6 rounded-xl bg-white p-6 shadow-md sm:flex-row sm:items-start'>
+        <img src={image} alt={pokemon.name} className='h-48 w-48 shrink-0 rounded-xl bg-gray-100' />
 
-      {!loading && !errorMessage && pokemon && (
-        <section className='mt-4'>
-          <h1 className='text-3xl font-bold capitalize'>
-            {pokemon.name} <span className='text-gray-400'>#{pokemon.id}</span>
-          </h1>
-          <img
-            src={pokemon.sprites.front_default}
-            alt={pokemon.name}
-            className='h-40 w-40'
-          />
+        <div className='w-full'>
+          <p className='text-sm font-semibold text-gray-400'>
+            #{String(pokemon.id).padStart(3, '0')}
+          </p>
+          <h1 className='mb-3 text-3xl font-bold capitalize'>{pokemon.name}</h1>
+
+          <div className='mb-4 flex flex-wrap gap-2'>
+            {pokemon.types.map((t) => (
+              <span
+                key={t.type.name}
+                className={`rounded-full px-3 py-1 text-sm font-semibold capitalize ${typeColors[t.type.name] || defaultTypeColor}`}
+              >
+                {t.type.name}
+              </span>
+            ))}
+          </div>
 
           {/* PokéAPI gives height in decimetres and weight in hectograms */}
-          <p>Height: {pokemon.height / 10} m</p>
-          <p>Weight: {pokemon.weight / 10} kg</p>
-          <p className='capitalize'>
-            Types: {pokemon.types.map((t) => t.type.name).join(', ')}
-          </p>
+          <dl className='mb-4 grid grid-cols-2 gap-3'>
+            <div className='rounded-lg bg-gray-50 p-3'>
+              <dt className='text-xs uppercase text-gray-500'>Height</dt>
+              <dd className='text-lg font-semibold'>{pokemon.height / 10} m</dd>
+            </div>
+            <div className='rounded-lg bg-gray-50 p-3'>
+              <dt className='text-xs uppercase text-gray-500'>Weight</dt>
+              <dd className='text-lg font-semibold'>{pokemon.weight / 10} kg</dd>
+            </div>
+          </dl>
 
-          <h2 className='mt-4 text-xl font-semibold'>Abilities</h2>
-          <ul className='list-disc pl-6'>
+          <h2 className='mb-2 text-xl font-semibold'>Abilities</h2>
+          <div>
             {pokemon.abilities.map((a) => (
-              <li key={a.ability.name} className='capitalize'>
-                {a.ability.name.replaceAll('-', ' ')}
-                {a.is_hidden && <span className='text-gray-500'> (hidden)</span>}
-              </li>
+              <AbilityBadge key={a.ability.name} name={a.ability.name} isHidden={a.is_hidden} />
             ))}
-          </ul>
-        </section>
-      )}
+          </div>
+        </div>
+      </section>
     </main>
   )
 }

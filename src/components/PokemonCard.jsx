@@ -6,11 +6,11 @@ function PokemonCard({ name, id }) {
   return (
     <Link
       to={`/pokemon/${name}`}
-      className='flex flex-col items-center rounded-lg border border-gray-200 bg-white p-4'
+      className='flex flex-col items-center rounded-xl bg-white p-4 shadow-md transition-transform hover:scale-105 hover:shadow-lg'
     >
-      <img src={getSpriteUrl(id)} alt={name} className='h-24 w-24' />
-      <span className='text-xs text-gray-400'>#{id}</span>
-      <h2 className='font-semibold capitalize'>{name}</h2>
+      <img src={getSpriteUrl(id)} alt={name} loading='lazy' className='h-24 w-24' />
+      <span className='text-xs font-semibold text-gray-400'>#{String(id).padStart(3, '0')}</span>
+      <h2 className='text-lg font-semibold capitalize'>{name}</h2>
     </Link>
   )
 }

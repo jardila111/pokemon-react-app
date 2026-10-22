@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { getPokemonList } from '../api/pokeapi'
 import PokemonList from '../components/PokemonList'
+import LoadingSpinner from '../components/LoadingSpinner'
+import ErrorMessage from '../components/ErrorMessage'
 
 // "/" — Pokémon list
 function HomePage() {
@@ -24,12 +26,14 @@ function HomePage() {
     loadPokemon()
   }, [])
 
+  if (loading) return <LoadingSpinner text='Loading Pokémon...' />
+  if (errorMessage) return <ErrorMessage message={errorMessage} />
+
   return (
-    <main className='p-8'>
-      <h1 className='mb-6 text-3xl font-bold'>Pokédex</h1>
-      {loading && <p>Loading...</p>}
-      {errorMessage && <p className='text-red-600'>{errorMessage}</p>}
-      {!loading && !errorMessage && <PokemonList pokemonList={pokemonList} />}
+    <main className='mx-auto max-w-6xl p-4'>
+      <h1 className='mb-1 text-3xl font-bold'>Pokédex</h1>
+      <p className='mb-6 text-gray-500'>Pick a Pokémon to see its details and abilities.</p>
+      <PokemonList pokemonList={pokemonList} />
     </main>
   )
 }
